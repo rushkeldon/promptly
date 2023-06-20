@@ -1,6 +1,8 @@
 @widthMenu: 600px;
 @heightItem: 75px;
 @heightPrompt: 62px;
+@radiusBorder: 6px;
+@radiusBorderBig: 8px;
 
 @clrBG: #2a2a2a;
 @clrFG: white;
@@ -78,7 +80,7 @@ body {
   left : 0;
   margin : auto;
   z-index : 5000;
-  border-radius : 8px;
+  border-radius : @radiusBorderBig;
   border : 2px solid white;
   display: none;
   opacity: 0;
@@ -195,6 +197,7 @@ body {
     position: absolute;
     right: 0px;
     width: auto;
+    border-bottom-left-radius: @radiusBorderBig;
     .Trans();
     .tools {
       display: none;
@@ -221,11 +224,14 @@ body {
       text-align: left;
       padding: 0px;
       width: @widthMenu;
+      border-bottom-left-radius: @radiusBorderBig;
       .prompt {
         overflow : visible;
         position : relative;
         font-family: "Courier New";
         font-weight : normal;
+        user-select: none;
+        border-bottom-left-radius: @radiusBorderBig;
         button {
           .button-reset();
           display: block;
@@ -240,6 +246,7 @@ body {
           background: @clrBG;
           .Trans( 0.2s);
           width : @widthMenu;
+          border-bottom-left-radius: @radiusBorderBig;
           &:hover {
             color: @clrFocus;
           }
@@ -316,11 +323,11 @@ body {
 .tooltip {
   position: absolute;
   visibility: hidden;
-  background-color: #555;
+  background-color: @clrBG;
   color: #fff;
   text-align: left;
   padding: 5px;
-  border-radius: 6px;
+  border-radius: @radiusBorder;
   opacity: 0;
   transition: opacity 0.3s;
   pointer-events: none;
