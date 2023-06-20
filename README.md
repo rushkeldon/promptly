@@ -1,0 +1,2 @@
+# promptly
+ChatGPT prompt manager
