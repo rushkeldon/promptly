@@ -200,7 +200,7 @@ function iframeMessageReceived( event ) {
         enableBtnSave();
         break;
       case CMDS.editorReady : // If the command is 'editorReady', populate the editor with the stored prompts.
-        iframe.postMessage( JSON.stringify({
+        iframe.contentWindow.postMessage( JSON.stringify({
           sender: 'promptly',
           cmd: 'populateEditor',
           payload: JSON.stringify( getStoredPrompts() )
@@ -298,7 +298,7 @@ function disableBtnSave() {
 }
 
 function btnSaveClicked() {
-  iframe.postMessage( JSON.stringify({
+  iframe.contentWindow.postMessage( JSON.stringify({
     sender: 'promptly',
     cmd: 'sendPrompts',
   } ), '*' );

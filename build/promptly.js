@@ -86,8 +86,10 @@ let iframeHTML = `<!DOCTYPE html>
     }
     
     function messageReceivedFromParent( event ){
+      console.log( 'iframeEditor.messageReceivedFromParent' );
       try{
         const data = JSON.parse( event.data );
+        console.log( 'data.cmd :', data.cmd );
         if( data.sender !== 'promptly' ) return console.log( 'ignoring message' );
         switch( data.cmd ){
           case 'sendPrompts':
@@ -168,14 +170,17 @@ var CMDS;
     CMDS["validJSON"] = "validJSON";
     CMDS["saveNewPrompts"] = "saveNewPrompts";
 })(CMDS || (CMDS = {}));
+const CN = 'promptly';
 /**
  * This function is called when a message is received from the iframe.
  * It parses the message and performs the appropriate action based on the command and passing the payload.
  * @param {MessageEvent} event - The message event received from the iframe.
  */
 function iframeMessageReceived(event) {
+    console.log(CN + '.iframeMessageReceived');
     try {
         const data = JSON.parse(event.data); // Parse the message data as JSON.
+        console.log('data.cmd :', data.cmd);
         if (data.sender !== 'promptly')
             return console.log('ignoring message'); // If the message sender is not 'promptly', ignore the message.
         switch (data.cmd) {
@@ -189,7 +194,7 @@ function iframeMessageReceived(event) {
                 enableBtnSave();
                 break;
             case CMDS.editorReady: // If the command is 'editorReady', populate the editor with the stored prompts.
-                iframe.postMessage(JSON.stringify({
+                iframe.contentWindow.postMessage(JSON.stringify({
                     sender: 'promptly',
                     cmd: 'populateEditor',
                     payload: JSON.stringify(getStoredPrompts())
@@ -271,7 +276,7 @@ function disableBtnSave() {
     btnSave.setAttribute('disabled', true);
 }
 function btnSaveClicked() {
-    iframe.postMessage(JSON.stringify({
+    iframe.contentWindow.postMessage(JSON.stringify({
         sender: 'promptly',
         cmd: 'sendPrompts',
     }), '*');
