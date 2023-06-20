@@ -6,6 +6,8 @@
 @clrFG: white;
 @clrFocus: turquoise;
 
+
+
 .Trans(@dur:0.5s) {
   -webkit-transition: all @dur;
   -moz-transition: all @dur;
@@ -62,6 +64,29 @@ html {
 body {
   background-color: #1d1f20;
   font-size: 16px;
+}
+
+#editor-iframe {
+  background: transparent;
+  overflow: hidden;
+  position : absolute;
+  width : 80vw;
+  height : 80vh;
+  top : 0;
+  bottom : 0;
+  right : 0;
+  left : 0;
+  margin : auto;
+  z-index : 5000;
+  border-radius : 8px;
+  border : 2px solid white;
+  display: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+  &.displayed {
+    display: block;
+    opacity: 1;
+  }
 }
 
 .editor {

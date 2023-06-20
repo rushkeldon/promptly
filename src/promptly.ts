@@ -1,4 +1,3 @@
-let iframe;
 let iframeHTML = `<!DOCTYPE html>
 <html>
 <head>
@@ -14,8 +13,13 @@ let iframeHTML = `<!DOCTYPE html>
 
       // Listen for messages from parent document
       window.addEventListener('message', function (event) {
-          if (event.data.indexOf('promptly') !== 0) return console.log('ignoring message');
-          editor.setValue(event.data.replace(/^promptly/, '').trim());
+          try{
+              const data = JSON.parse( event.data );
+              if( data.sender !== 'promptly' ) return console.log( 'ignoring message' );
+          } catch( err ){
+              console.log( 'error parsing message:  ', err );
+          }
+          editor?.setValue(event.data);
       }, false);
 
       function createEditor() {
@@ -24,8 +28,46 @@ let iframeHTML = `<!DOCTYPE html>
           editor.setOption('enableAutoIndent', true);
           editor.session.setMode('ace/mode/javascript');
           editor.session.setOption('wrap', true);
+          editor.getSession().on( 'change', editorChanged );
 
-          window.setTimeout(() => window.parent.postMessage('promptly{"msg" : "iframe created successfully!"}'), 2000);
+          window.setTimeout(() => window.parent.postMessage('{ "sender" : "promptly", "msg" : "iframe created successfully!"}'), 2000);
+      }
+      
+      function editorChanged( e ) {
+        try{
+          const editorValue = editor.getValue();
+          const newPrompts = JSON.parse( editorValue );
+          const badMember = newPrompts.find( currentPrompt => typeof currentPrompt !== 'string' );
+          if( badMember ) throw( new Error( 'found a bad member' ) );
+          enableBtnSave();
+        } catch( err ){
+          // console.log( err );
+          disableBtnSave();
+        }
+      }
+      
+      function sendPrompts(){
+          const editorValue = editor.getValue();
+          const newPrompts = JSON.parse( editorValue );
+          window.parent.postMessage( JSON.stringify( {
+              sender: 'promptly',
+              cmd : 'saveNewPrompts',
+              payload : newPrompts
+          } ), '*');
+      }
+      
+      function signalInvalidJSON(){
+          window.parent.postMessage( JSON.stringify( {
+              sender: 'promptly',
+              cmd : 'invalidJSON'
+          } ), '*');
+      }
+      
+      function signalValidJSON(){
+          window.parent.postMessage( JSON.stringify( {
+              sender: 'promptly',
+              cmd : 'validJSON'
+          } ), '*');
       }
 
   </script>
@@ -46,31 +88,188 @@ let iframeHTML = `<!DOCTYPE html>
 </body>
 </html>`;
 
-window.addEventListener('message', function(event) {
-  if( event.data.indexOf( 'promptly' ) !== 0 ){
-    console.log( 'ChatGPT parent window ignoring message' );
-    return;
-  }
-  const data = dePromptly( event.data );
-  console.log('ChatGPT parent window received message:  ', JSON.stringify( JSON.parse( data ), null, 2 ));
-}, false);
+const uiHTML = `<div class="header">
+   <a class="hamburger" href="#">
+      <div class="patty"></div>
+   </a>
+   <div class="menu">
+      <div class="tools">
+         <button id="edit" title="edit prompts">✎</button>
+      </div>
+      <div class="prompts">
+      </div>
+   </div>
+</div>
+<button class="btn-save" title="save"></button>
+<code id="editor" class="editor" contenteditable="true"></code>`;
 
-function createIframe() {
+let iframe;
+let storedPrompts;
+let btnSave;
+
+const defaultPrompts = [
+  'Please prioritize brevity above all else (one word responses where sufficient) and refrain from explaining your limitations.'
+];
+
+function whenDOMready(func) {
+  switch (String(document.readyState)) {
+    case "complete":
+    case "loaded":
+    case "interactive":
+      func();
+      break;
+    default:
+      window.addEventListener('DOMContentLoaded', function (e) { func(); });
+  }
+}
+
+function main() {
+  console.log( 'promptly main' );
+  storedPrompts = getStoredPrompts();
+  populatePrompts( storedPrompts );
+  addTooltips();
+  addEventListeners();
+}
+
+function createEditorIframe() {
   iframe = document.createElement( 'iframe' );
   iframe.id = 'editor-iframe';
+  iframe.className = 'displayed';
   iframe.addEventListener( 'load', () => console.log( 'iframe loaded' ) );
   document.body.appendChild( iframe );
   iframe.srcdoc = iframeHTML;
 }
 
-function dePromptly(str) {
-  return str.replace(/^promptly/, '').trim();
+function dismissEditorIframe() {
+  iframe.classList.remove( 'displayed' );
+  btnSave.classList.remove( 'displayed' );
 }
 
-function sendTestMessage() {
-  iframe.contentWindow.postMessage( 'promptly' + JSON.stringify( { foo : 'goo', x : 3, isWorking : true }, null, 2 ), '*');
+function displayEditorIframe() {
+  iframe.classList.add( 'displayed' );
+  btnSave.classList.add( 'displayed' );
 }
 
-// createIframe();
+function getStoredPrompts() {
+  let prompts = localStorage.getItem('promptly') || JSON.stringify( defaultPrompts );
+  return JSON.parse( prompts );
+}
 
-window.setTimeout( sendTestMessage, 5000 );
+function savePrompts( promptsToSave = [] ) {
+  localStorage.setItem('promptly', JSON.stringify(promptsToSave));
+}
+
+function populatePrompts( storedPrompts ) {
+  const promptsDiv = document.querySelector( '.prompts' );
+  promptsDiv.innerHTML = '';
+  storedPrompts.find( currentPrompt => {
+    promptsDiv.innerHTML += `<div class="prompt">
+        <button>${currentPrompt}</button>
+      </div>
+      `;
+  } );
+}
+
+function addEventListeners() {
+  let btnMenu = document.querySelector( '.hamburger' );
+  btnMenu.addEventListener( 'click', btnMenuClicked );
+
+  addPromptClickListeners();
+
+  const btnEdit = document.querySelector( '#edit' );
+  btnEdit.addEventListener( 'click', editBtnClicked );
+
+  btnSave = document.querySelector( '.btn-save' );
+  btnSave.addEventListener( 'click', btnSaveClicked );
+}
+
+function addPromptClickListeners() {
+  const prompts = document.querySelector( '.prompts' );
+  const btns = prompts.querySelectorAll( 'button' );
+  btns.forEach( btn => {
+    btn.addEventListener( 'click', promptClicked );
+  } );
+}
+
+function btnMenuClicked( e ) {
+  let header = document.querySelector( '.header' );
+  header.classList.toggle( 'open' );
+  if( !header.classList.contains( 'open' ) ){
+    dismissEditorIframe();
+  }
+}
+
+function promptClicked( e ) {
+  console.log( e.target.innerHTML );
+}
+
+function enableBtnSave() {
+  btnSave.classList.remove( 'disabled' );
+  btnSave.removeAttribute( 'disabled' );
+}
+
+function disableBtnSave() {
+  btnSave.classList.add( 'disabled' );
+  btnSave.setAttribute( 'disabled', true );
+}
+
+function btnSaveClicked() {
+  iframe.postMessage( JSON.stringify({
+    sender: 'promptly',
+    cmd: 'sendPrompts',
+  } ), '*' );
+}
+
+function newPromptsReceived( newPrompts ) {
+  savePrompts( newPrompts );
+  dismissEditor();
+  populatePrompts( newPrompts );
+  addTooltips();
+}
+
+
+function editBtnClicked( e ) {
+  const saveBtn = document.querySelector( '.btn-save' );
+  saveBtn.classList.toggle( 'displayed' );
+
+  const editorIframe = document.querySelector( '#editor-iframe' );
+  if( !editorIframe ){
+    createEditorIframe();
+  }
+
+  displayEditorIframe();
+}
+
+function addTooltips(){
+  const prompts = document.querySelector( '.prompts' );
+  const btns = prompts.querySelectorAll( 'button' );
+  btns.forEach(btn => {
+    const tooltipText = btn.innerHTML;
+
+    const tooltipEl = document.createElement('span');
+    tooltipEl.classList.add('tooltip');
+    tooltipEl.innerText = tooltipText;
+
+    btn.parentNode.appendChild(tooltipEl);
+
+    let timer;
+    btn.addEventListener('mouseover', () => {
+      timer = setTimeout(() => {
+        tooltipEl.classList.add('show');
+      }, 750); // Show after 1s hover
+    });
+
+    btn.addEventListener('mouseout', () => {
+      clearTimeout(timer); // Cancel the timer if they mouse out
+      tooltipEl.classList.remove('show');
+    });
+  });
+}
+
+// MAIN ENTRYPOINT
+whenDOMready( () => {
+  const div = window.document.createElement( 'div' );
+  window.document.body.appendChild( div );
+  div.innerHTML = uiHTML;
+  whenDOMready( main );
+});
