@@ -1,0 +1,13 @@
+{
+  "name": "promptly",
+  "version": "1.0.0",
+  "dependencies": {
+    "less": "^4.1.3",
+    "less-plugin-clean-css": "^1.5.1",
+    "typescript": "^5.1.3"
+  },
+  "scripts": {
+    "build": "tsc && npm run compile-less",
+    "compile-less": "lessc src/promptly.less build/promptly.css --clean-css=\"--s1 --advanced --compatibility=ie9\" --source-map"
+  }
+}
