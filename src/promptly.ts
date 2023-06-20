@@ -9,66 +9,85 @@ let iframeHTML = `<!DOCTYPE html>
           crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
   <script>
-      let editor;
+    let editor;
 
-      // Listen for messages from parent document
-      window.addEventListener('message', function (event) {
-          try{
-              const data = JSON.parse( event.data );
-              if( data.sender !== 'promptly' ) return console.log( 'ignoring message' );
-          } catch( err ){
-              console.log( 'error parsing message:  ', err );
-          }
-          editor?.setValue(event.data);
-      }, false);
-
-      function createEditor() {
-          editor = ace.edit('editor');
-          editor.setTheme('ace/theme/vibrant_ink');
-          editor.setOption('enableAutoIndent', true);
-          editor.session.setMode('ace/mode/javascript');
-          editor.session.setOption('wrap', true);
-          editor.getSession().on( 'change', editorChanged );
-
-          window.setTimeout(() => window.parent.postMessage('{ "sender" : "promptly", "msg" : "iframe created successfully!"}'), 2000);
+    // Listen for messages from parent document
+    window.addEventListener('message', function (event) {
+      try{
+        const data = JSON.parse( event.data );
+        if( data.sender !== 'promptly' ) return console.log( 'ignoring message' );
+      } catch( err ){
+        console.log( 'error parsing message:  ', err );
       }
-      
-      function editorChanged( e ) {
-        try{
-          const editorValue = editor.getValue();
-          const newPrompts = JSON.parse( editorValue );
-          const badMember = newPrompts.find( currentPrompt => typeof currentPrompt !== 'string' );
-          if( badMember ) throw( new Error( 'found a bad member' ) );
-          enableBtnSave();
-        } catch( err ){
-          // console.log( err );
-          disableBtnSave();
+      editor?.setValue(event.data);
+    }, false);
+
+    function createEditor() {
+      editor = ace.edit('editor');
+      editor.setTheme('ace/theme/vibrant_ink');
+      editor.setOption('enableAutoIndent', true);
+      editor.session.setMode('ace/mode/javascript');
+      editor.session.setOption('wrap', true);
+      editor.getSession().on( 'change', editorChanged );
+
+      window.setTimeout(() => window.parent.postMessage('{ "sender" : "promptly", "msg" : "iframe created successfully!"}'), 2000);
+    }
+    
+    function editorChanged( e ) {
+      try{
+        const editorValue = editor.getValue();
+        const newPrompts = JSON.parse( editorValue );
+        const badMember = newPrompts.find( currentPrompt => typeof currentPrompt !== 'string' );
+        if( badMember ) throw( new Error( 'found a bad member' ) );
+        signalValidJSON();
+      } catch( err ){
+        signalInvalidJSON();
+      }
+    }
+    
+    function sendPrompts(){
+      try{
+        const editorValue = editor.getValue();
+        const newPrompts = JSON.parse( editorValue );
+        window.parent.postMessage( JSON.stringify( {
+        sender: 'promptly',
+        cmd : 'saveNewPrompts',
+        payload : newPrompts
+      } ), '*');
+      } catch( err ){
+          console.log( 'error parsing current editor value:  ', err );
+      }
+    }
+    
+    function signalInvalidJSON(){
+      window.parent.postMessage( JSON.stringify( {
+        sender: 'promptly',
+        cmd : 'invalidJSON'
+      } ), '*');
+    }
+    
+    function signalValidJSON(){
+      window.parent.postMessage( JSON.stringify( {
+        sender: 'promptly',
+        cmd : 'validJSON'
+      } ), '*');
+    }
+    
+    function messageReceivedFromParent( event ){
+      try{
+        const data = JSON.parse( event.data );
+        if( data.sender !== 'promptly' ) return console.log( 'ignoring message' );
+        switch( data.cmd ){
+          case 'sendPrompts':
+            sendPrompts();
+            break;
+          default :
+            console.log( 'unknown command encountered:  ', data.cmd );
         }
+      } catch( err ){
+        console.log( 'error parsing message:  ', err );
       }
-      
-      function sendPrompts(){
-          const editorValue = editor.getValue();
-          const newPrompts = JSON.parse( editorValue );
-          window.parent.postMessage( JSON.stringify( {
-              sender: 'promptly',
-              cmd : 'saveNewPrompts',
-              payload : newPrompts
-          } ), '*');
-      }
-      
-      function signalInvalidJSON(){
-          window.parent.postMessage( JSON.stringify( {
-              sender: 'promptly',
-              cmd : 'invalidJSON'
-          } ), '*');
-      }
-      
-      function signalValidJSON(){
-          window.parent.postMessage( JSON.stringify( {
-              sender: 'promptly',
-              cmd : 'validJSON'
-          } ), '*');
-      }
+    }
 
   </script>
   <style>
@@ -130,6 +149,33 @@ function main() {
   addTooltips();
   addEventListeners();
 }
+
+
+/**
+ * This function is called when a message is received from the iframe.
+ * It parses the message and performs the appropriate action based on the command and passing the payload.
+ * @param {MessageEvent} event - The message event received from the iframe.
+ */
+function iframeMessageReceived( event ) {
+  try{
+    const data = JSON.parse( event.data ); // Parse the message data as JSON.
+    if( data.sender !== 'promptly' ) return console.log( 'ignoring message' ); // If the message sender is not 'promptly', ignore the message.
+    switch( data.cmd ){
+      case 'saveNewPrompts': // If the command is 'saveNewPrompts', save the new prompts.
+        savePrompts( data.payload );
+        break;
+      case 'invalidJSON': // If the command is 'invalidJSON', disable the save button.
+        disableBtnSave();
+        break;
+      case 'validJSON': // If the command is 'validJSON', enable the save button.
+        enableBtnSave();
+        break;
+    }
+  } catch( err ){ // If there was an error parsing the message, log the error.
+    console.log( 'error parsing message:  ', err );
+  }
+}
+
 
 function createEditorIframe() {
   iframe = document.createElement( 'iframe' );
@@ -222,11 +268,10 @@ function btnSaveClicked() {
 
 function newPromptsReceived( newPrompts ) {
   savePrompts( newPrompts );
-  dismissEditor();
+  dismissEditorIframe();
   populatePrompts( newPrompts );
   addTooltips();
 }
-
 
 function editBtnClicked( e ) {
   const saveBtn = document.querySelector( '.btn-save' );
