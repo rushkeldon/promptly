@@ -166,40 +166,38 @@ var CMDS;
     CMDS["saveNewPrompts"] = "saveNewPrompts";
 })(CMDS || (CMDS = {}));
 const CN = 'promptly';
-/**
- * This function is called when a message is received from the iframe.
- * It parses the message and performs the appropriate action based on the command and passing the payload.
- * @param {MessageEvent} event - The message event received from the iframe.
- */
 function iframeMessageReceived(event) {
     try {
-        const data = JSON.parse(event.data); // Parse the message data as JSON.
+        const data = JSON.parse(event.data);
         if (data.sender !== 'promptly')
-            return console.log('ignoring message'); // If the message sender is not 'promptly', ignore the message.
-        console.log(CN + '.iframeMessageReceived');
-        console.log('data.cmd :', data.cmd);
+            return console.log('ignoring message');
+        // console.log( CN + '.iframeMessageReceived' );
+        // console.log( 'data.cmd :', data.cmd );
         switch (data.cmd) {
-            case CMDS.saveNewPrompts: // If the command is 'saveNewPrompts', save the new prompts.
+            case CMDS.saveNewPrompts:
                 savePrompts(data.payload);
+                populatePrompts(storedPrompts);
+                addTooltips();
+                addPromptClickListeners();
                 break;
-            case CMDS.invalidJSON: // If the command is 'invalidJSON', disable the save button.
+            case CMDS.invalidJSON:
                 disableBtnSave();
                 break;
-            case CMDS.validJSON: // If the command is 'validJSON', enable the save button.
+            case CMDS.validJSON:
                 enableBtnSave();
                 break;
-            case CMDS.editorReady: // If the command is 'editorReady', populate the editor with the stored prompts.
+            case CMDS.editorReady:
                 iframe.contentWindow.postMessage(JSON.stringify({
                     sender: 'promptly',
                     cmd: 'populateEditor',
                     payload: JSON.stringify(getStoredPrompts())
                 }), '*');
                 break;
-            default: // If the command is unknown, log the error.
+            default:
                 console.log('unknown command encountered :', data.cmd);
         }
     }
-    catch (err) { // If there was an error parsing the message, log the error.
+    catch (err) {
         console.log('error parsing message:  ', err);
     }
 }
@@ -207,7 +205,6 @@ function createEditorIframe() {
     iframe = document.createElement('iframe');
     iframe.id = 'editor-iframe';
     iframe.className = 'displayed';
-    iframe.addEventListener('load', () => console.log('iframe loaded'));
     document.body.appendChild(iframe);
     iframe.srcdoc = iframeHTML;
 }
@@ -225,6 +222,7 @@ function getStoredPrompts() {
 }
 function savePrompts(promptsToSave = []) {
     localStorage.setItem('promptly', JSON.stringify(promptsToSave));
+    storedPrompts = promptsToSave;
 }
 function populatePrompts(storedPrompts) {
     const promptsDiv = document.querySelector('.prompts');
@@ -252,7 +250,7 @@ function addPromptClickListeners() {
         btn.addEventListener('click', promptClicked);
     });
 }
-function btnMenuClicked(e) {
+function btnMenuClicked() {
     let header = document.querySelector('.header');
     header.classList.toggle('open');
     if (!header.classList.contains('open')) {
@@ -261,6 +259,11 @@ function btnMenuClicked(e) {
 }
 function promptClicked(e) {
     console.log(e.target.innerHTML);
+    const promptTextArea = document.querySelector('#prompt-textarea');
+    promptTextArea.value = e.target.innerHTML;
+    promptTextArea.dispatchEvent(new Event('input', { bubbles: true }));
+    // dismiss menu
+    btnMenuClicked();
 }
 function enableBtnSave() {
     btnSave.classList.remove('disabled');
@@ -275,12 +278,7 @@ function btnSaveClicked() {
         sender: 'promptly',
         cmd: 'sendPrompts',
     }), '*');
-}
-function newPromptsReceived(newPrompts) {
-    savePrompts(newPrompts);
     dismissEditorIframe();
-    populatePrompts(newPrompts);
-    addTooltips();
 }
 function btnEditClicked(e) {
     btnSave.classList.toggle('displayed');
@@ -294,20 +292,19 @@ function addTooltips() {
     const prompts = document.querySelector('.prompts');
     const btns = prompts.querySelectorAll('button');
     btns.forEach(btn => {
-        const tooltipText = btn.innerHTML;
-        const tooltipEl = document.createElement('span');
-        tooltipEl.classList.add('tooltip');
-        tooltipEl.innerText = tooltipText;
-        btn.parentNode.appendChild(tooltipEl);
+        const tooltip = document.createElement('span');
+        tooltip.classList.add('tooltip');
+        tooltip.innerText = btn.innerHTML;
+        btn.parentNode.appendChild(tooltip);
         let timer;
         btn.addEventListener('mouseover', () => {
             timer = setTimeout(() => {
-                tooltipEl.classList.add('show');
-            }, 750); // Show after 1s hover
+                tooltip.classList.add('show');
+            }, 750);
         });
         btn.addEventListener('mouseout', () => {
             clearTimeout(timer); // Cancel the timer if they mouse out
-            tooltipEl.classList.remove('show');
+            tooltip.classList.remove('show');
         });
     });
 }
