@@ -31,10 +31,10 @@ let iframeHTML = `<!DOCTYPE html>
       editor.session.setOption('wrap', true);
       editor.getSession().on( 'change', editorChanged );
 
-      window.setTimeout(() => window.parent.postMessage( JSON.stringify({
+      window.parent.postMessage( JSON.stringify({
         sender: 'promptly',
         cmd : CMDS.editorReady
-      })), 2000);
+      } ), '*');
     }
     
     function editorChanged( e ) {
