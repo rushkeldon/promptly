@@ -89,36 +89,6 @@ body {
   }
 }
 
-.editor {
-  white-space: pre-wrap;
-  white-space: -moz-pre-wrap;
-  white-space: -pre-wrap;
-  white-space: -o-pre-wrap;
-  word-wrap: break-word;
-  position : absolute;
-  width : 80vw;
-  height : 80vh;
-  top : 0px;
-  bottom : 0px;
-  left : 0px;
-  right : 0px;
-  margin : auto;
-  display : none;
-  opacity : 0;
-  transition: opacity 0.3s;
-  border-radius : 6px;
-  border : 3px solid white;
-  background : black;
-  z-index : 1000;
-  overflow-y : scroll;
-  overflow-x : visible;
-  font-size : 16px;
-  font-family : "Source Code Pro", monospace;
-  &.displayed {
-    display : inline-block;
-    opacity : 1;
-  }
-}
 .btn-save {
   position: absolute;
   display : none;
@@ -185,7 +155,7 @@ body {
     cursor: pointer;
     z-index: 100;
     position: absolute;
-    top: 0;
+    top : -3px;
     right: 0;
     width: @heightItem;
     height: @heightItem;
@@ -358,7 +328,7 @@ body {
   top: 0px;
   white-space: normal;
   left: -@widthMenu - 4px;
-  font-size : 18px;
+  font-size : 20px;
   min-height : @heightPrompt;
   &.show {
     visibility: visible;
