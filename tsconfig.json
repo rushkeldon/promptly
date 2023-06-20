@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "es2016",
+    "outDir": "./build",
+    "allowJs": true,
+    "checkJs": false,
+    "noImplicitAny": false,
+    "noFallthroughCasesInSwitch": false,
+    "strict": false
+  },
+  "include": [
+    "src"
+  ]
+}
