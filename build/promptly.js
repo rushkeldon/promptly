@@ -21,15 +21,7 @@ let iframeHTML = `<!DOCTYPE html>
     };
 
     // Listen for messages from parent document
-    window.addEventListener('message', function (event) {
-      try{
-        const data = JSON.parse( event.data );
-        if( data.sender !== 'promptly' ) return console.log( 'ignoring message' );
-      } catch( err ){
-        console.log( 'error parsing message:  ', err );
-      }
-      editor?.setValue(event.data);
-    }, false);
+    window.addEventListener('message', messageReceivedFromParent, false);
 
     function createEditor() {
       editor = ace.edit('editor');
@@ -86,11 +78,11 @@ let iframeHTML = `<!DOCTYPE html>
     }
     
     function messageReceivedFromParent( event ){
-      console.log( 'iframeEditor.messageReceivedFromParent' );
       try{
         const data = JSON.parse( event.data );
-        console.log( 'data.cmd :', data.cmd );
         if( data.sender !== 'promptly' ) return console.log( 'ignoring message' );
+        console.log( 'iframeEditor.messageReceivedFromParent' );
+        console.log( 'data.cmd :', data.cmd );
         switch( data.cmd ){
           case 'sendPrompts':
             sendPrompts();
@@ -177,12 +169,12 @@ const CN = 'promptly';
  * @param {MessageEvent} event - The message event received from the iframe.
  */
 function iframeMessageReceived(event) {
-    console.log(CN + '.iframeMessageReceived');
     try {
         const data = JSON.parse(event.data); // Parse the message data as JSON.
-        console.log('data.cmd :', data.cmd);
         if (data.sender !== 'promptly')
             return console.log('ignoring message'); // If the message sender is not 'promptly', ignore the message.
+        console.log(CN + '.iframeMessageReceived');
+        console.log('data.cmd :', data.cmd);
         switch (data.cmd) {
             case CMDS.saveNewPrompts: // If the command is 'saveNewPrompts', save the new prompts.
                 savePrompts(data.payload);
@@ -241,7 +233,7 @@ function populatePrompts(storedPrompts) {
     });
 }
 function addEventListeners() {
-    window.addEventListener('message', iframeMessageReceived);
+    window.addEventListener('message', iframeMessageReceived, false);
     let btnMenu = document.querySelector('.hamburger');
     btnMenu.addEventListener('click', btnMenuClicked);
     addPromptClickListeners();
