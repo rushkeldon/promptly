@@ -1,24 +1,12 @@
-#editor-iframe, .btn-save {
-    opacity: 0;
-    background: 0 0
-}
-
 .btn-save, .button-reset {
     text-align: inherit;
     color: inherit;
+    font-size: 100%;
     -moz-appearance: none;
-    -webkit-appearance: none;
-    padding: 0
-}
-
-.button-reset, .button-reset:active, .button-reset:focus, .button-reset:hover {
-    background: 0 0;
-    outline: 0;
-    border: none
-}
-
-#editor-iframe, .btn-save, .btn-save:after, .header, .header .hamburger {
-    position: absolute
+    display: inline-block;
+    padding: 0;
+    margin: 0;
+    line-height: inherit
 }
 
 .text-ellipsis {
@@ -29,17 +17,31 @@
 }
 
 .button-reset {
-    margin: 0;
-    font-size: 100%;
+    background: 0 0;
+    border: none;
+    outline: 0;
     font-family: inherit;
-    line-height: inherit;
     overflow: visible;
     text-transform: none;
-    display: inline-block;
     vertical-align: middle;
     white-space: normal;
     cursor: pointer;
+    -webkit-appearance: none;
     appearance: none
+}
+
+.btn-save, .header .menu .tools button {
+    font-family: inherit;
+    -webkit-appearance: none;
+    text-transform: none;
+    vertical-align: middle;
+    white-space: normal
+}
+
+.button-reset:active, .button-reset:focus, .button-reset:hover {
+    background: 0 0;
+    border: none;
+    outline: 0
 }
 
 html {
@@ -56,7 +58,9 @@ body {
 }
 
 #editor-iframe {
+    background: 0 0;
     overflow: hidden;
+    position: absolute;
     width: 80vw;
     height: 80vh;
     top: 0;
@@ -68,7 +72,14 @@ body {
     border-radius: 8px;
     border: 2px solid #fff;
     display: none;
+    opacity: 0;
     transition: opacity .3s
+}
+
+.btn-save, .btn-save:active, .btn-save:focus, .btn-save:hover {
+    background: 0 0;
+    border: none;
+    outline: 0
 }
 
 #editor-iframe.displayed {
@@ -76,51 +87,35 @@ body {
     opacity: 1
 }
 
-.btn-save, .header .menu .tools button {
-    font-family: inherit;
-    display: inline-block;
-    margin: 0;
-    line-height: inherit;
-    text-transform: none;
-    vertical-align: middle;
-    outline: 0
-}
-
 .btn-save {
+    position: absolute;
     width: 75px/2;
     height: 75px/2;
     top: calc(10vh - (75px / 2));
     left: calc(10vw - 3px);
-    z-index: 1001;
+    z-index: 5000;
+    opacity: 0;
     transition: opacity .3s;
-    border: none;
-    font-size: 100%;
     overflow: visible;
-    white-space: normal;
     cursor: pointer;
     appearance: none
 }
 
 .btn-save:after, .header .menu .tools button {
+    color: #fff;
     text-align: center;
     overflow: visible;
     cursor: pointer
 }
 
-.btn-save:active, .btn-save:focus, .btn-save:hover {
-    background: 0 0;
-    border: none;
-    outline: 0
-}
-
 .btn-save:after {
     display: block;
+    position: absolute;
     top: 0;
     right: 0;
     content: "\1F4BE";
     width: 100%;
     height: 100%;
-    color: #fff;
     font-family: Arial;
     font-size: 30px
 }
@@ -147,10 +142,31 @@ body {
     transform: rotate(180deg)
 }
 
+.shadow-block {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1001;
+    background-color: rgba(0, 0, 0, .7);
+    display: none;
+    opacity: 0;
+    transition: opacity .3s
+}
+
+.shadow-block.displayed {
+    display: block;
+    opacity: 1
+}
+
 .header {
     transform: scale(.7);
     transform-origin: top right;
     font-family: Verdana;
+    position: absolute;
     right: 0;
     top: 0;
     width: auto;
@@ -161,6 +177,7 @@ body {
 .header .hamburger {
     cursor: pointer;
     z-index: 100;
+    position: absolute;
     top: -3px;
     right: 0;
     width: 75px;
@@ -229,11 +246,12 @@ body {
     background: 0 0;
     border: none;
     padding: 0;
-    white-space: normal;
-    -webkit-appearance: none;
+    margin: 0;
+    outline: 0;
+    line-height: inherit;
+    display: inline-block;
     -moz-appearance: none;
     appearance: none;
-    color: #fff;
     font-size: 36px;
     height: 75px;
     width: 75px

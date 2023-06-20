@@ -132,11 +132,13 @@ const uiHTML = `<div class="header">
    </div>
 </div>
 <button class="btn-save" title="save"></button>
-<code id="editor" class="editor" contenteditable="true"></code>`;
+<code id="editor" class="editor" contenteditable="true"></code>
+<div class="shadow-block"></div>`;
 
 let iframe;
 let storedPrompts;
 let btnSave;
+let shadowBlock;
 
 const defaultPrompts = [
   'Please prioritize brevity above all else (one word responses where sufficient) and refrain from explaining your limitations.'
@@ -218,11 +220,13 @@ function createEditorIframe() {
 function dismissEditorIframe() {
   iframe.classList.remove( 'displayed' );
   btnSave.classList.remove( 'displayed' );
+  shadowBlock.classList.remove( 'displayed' );
 }
 
 function displayEditorIframe() {
   iframe.classList.add( 'displayed' );
   btnSave.classList.add( 'displayed' );
+  shadowBlock.classList.add( 'displayed' );
 }
 
 function getStoredPrompts() {
@@ -258,6 +262,9 @@ function addEventListeners() {
 
   btnSave = document.querySelector( '.btn-save' );
   btnSave.addEventListener( 'click', btnSaveClicked );
+
+  shadowBlock = document.querySelector( '.shadow-block' );
+  shadowBlock.addEventListener( 'click', dismissEditorIframe );
 }
 
 function addPromptClickListeners() {

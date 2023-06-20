@@ -98,7 +98,7 @@ body {
   height : @heightItem / 2;
   top : calc( 10vh - ( @heightItem / 2 ) );
   left : calc( 10vw - 3px );
-  z-index : 1001;
+  z-index : 5000;
   opacity : 0;
   transition: opacity 0.3s;
   .button-reset();
@@ -142,6 +142,25 @@ body {
   transform: rotate(180deg);
 }
 
+.shadow-block {
+  position: absolute;
+  top : 0;
+  bottom : 0;
+  right : 0;
+  left : 0;
+  width : 100vw;
+  height : 100vh;
+  z-index : 1001;
+  background-color: rgba(0,0,0,0.7);
+  display: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+  &.displayed {
+      display: block;
+      opacity: 1;
+  }
+}
+
 .header {
   transform: scale(0.7);
   transform-origin: top right;
@@ -153,7 +172,6 @@ body {
   z-index: 1000;
   height: @heightItem;
   .hamburger {
-    z-index: 1;
     cursor: pointer;
     z-index: 100;
     position: absolute;
