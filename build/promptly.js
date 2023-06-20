@@ -88,7 +88,7 @@ let iframeHTML = `<!DOCTYPE html>
             sendPrompts();
             break;
           case 'populateEditor':
-            editor.setValue( JSON.stringify( data.payload ) );
+            editor.setValue( JSON.stringify( JSON.parse( data.payload ), null, 2 ) );
             break;
           default :
             console.log( 'unknown command encountered:  ', data.cmd );
@@ -108,6 +108,9 @@ let iframeHTML = `<!DOCTYPE html>
           bottom: 0;
           right: 0;
           left: 0;
+          font-size : 16px;
+          font-family : "Source Code Pro", monospace;
+          overflow-y : scroll;
       }
   </style>
 </head>
