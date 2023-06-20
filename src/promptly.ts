@@ -170,12 +170,13 @@ function iframeMessageReceived( event ) {
       case 'validJSON': // If the command is 'validJSON', enable the save button.
         enableBtnSave();
         break;
+      default : // If the command is unknown, log the error.
+        console.log( 'unknown command encountered :', data.cmd );
     }
   } catch( err ){ // If there was an error parsing the message, log the error.
     console.log( 'error parsing message:  ', err );
   }
 }
-
 
 function createEditorIframe() {
   iframe = document.createElement( 'iframe' );
@@ -211,19 +212,20 @@ function populatePrompts( storedPrompts ) {
   storedPrompts.find( currentPrompt => {
     promptsDiv.innerHTML += `<div class="prompt">
         <button>${currentPrompt}</button>
-      </div>
-      `;
+      </div>`;
   } );
 }
 
 function addEventListeners() {
+  window.addEventListener( 'message', iframeMessageReceived );
+
   let btnMenu = document.querySelector( '.hamburger' );
   btnMenu.addEventListener( 'click', btnMenuClicked );
 
   addPromptClickListeners();
 
   const btnEdit = document.querySelector( '#edit' );
-  btnEdit.addEventListener( 'click', editBtnClicked );
+  btnEdit.addEventListener( 'click', btnEditClicked );
 
   btnSave = document.querySelector( '.btn-save' );
   btnSave.addEventListener( 'click', btnSaveClicked );
@@ -273,9 +275,8 @@ function newPromptsReceived( newPrompts ) {
   addTooltips();
 }
 
-function editBtnClicked( e ) {
-  const saveBtn = document.querySelector( '.btn-save' );
-  saveBtn.classList.toggle( 'displayed' );
+function btnEditClicked(e ) {
+  btnSave.classList.toggle( 'displayed' );
 
   const editorIframe = document.querySelector( '#editor-iframe' );
   if( !editorIframe ){
@@ -316,5 +317,5 @@ whenDOMready( () => {
   const div = window.document.createElement( 'div' );
   window.document.body.appendChild( div );
   div.innerHTML = uiHTML;
-  whenDOMready( main );
+  main();
 });
