@@ -86,8 +86,10 @@ let iframeHTML = `<!DOCTYPE html>
     }
     
     function messageReceivedFromParent( event ){
+      console.log( 'iframeEditor.messageReceivedFromParent' );
       try{
         const data = JSON.parse( event.data );
+        console.log( 'data.cmd :', data.cmd );
         if( data.sender !== 'promptly' ) return console.log( 'ignoring message' );
         switch( data.cmd ){
           case 'sendPrompts':
@@ -174,6 +176,7 @@ enum CMDS {
   saveNewPrompts = 'saveNewPrompts'
 }
 
+const CN = 'promptly';
 
 /**
  * This function is called when a message is received from the iframe.
@@ -181,8 +184,10 @@ enum CMDS {
  * @param {MessageEvent} event - The message event received from the iframe.
  */
 function iframeMessageReceived( event ) {
+  console.log( CN + '.iframeMessageReceived' );
   try{
     const data = JSON.parse( event.data ); // Parse the message data as JSON.
+    console.log( 'data.cmd :', data.cmd );
     if( data.sender !== 'promptly' ) return console.log( 'ignoring message' ); // If the message sender is not 'promptly', ignore the message.
     switch( data.cmd ){
       case CMDS.saveNewPrompts : // If the command is 'saveNewPrompts', save the new prompts.

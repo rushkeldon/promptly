@@ -10,6 +10,15 @@ let iframeHTML = `<!DOCTYPE html>
 
   <script>
     let editor;
+    
+    const CMDS = {
+      sendPrompts : 'sendPrompts',
+      populateEditor : 'populateEditor',
+      editorReady : 'editorReady',
+      invalidJSON : 'invalidJSON',
+      validJSON : 'validJSON',
+      saveNewPrompts : 'saveNewPrompts'
+    };
 
     // Listen for messages from parent document
     window.addEventListener('message', function (event) {
@@ -30,7 +39,10 @@ let iframeHTML = `<!DOCTYPE html>
       editor.session.setOption('wrap', true);
       editor.getSession().on( 'change', editorChanged );
 
-      window.setTimeout(() => window.parent.postMessage('{ "sender" : "promptly", "msg" : "iframe created successfully!"}'), 2000);
+      window.setTimeout(() => window.parent.postMessage( JSON.stringify({
+        sender: 'promptly',
+        cmd : CMDS.editorReady
+      })), 2000);
     }
     
     function editorChanged( e ) {
@@ -51,7 +63,7 @@ let iframeHTML = `<!DOCTYPE html>
         const newPrompts = JSON.parse( editorValue );
         window.parent.postMessage( JSON.stringify( {
         sender: 'promptly',
-        cmd : 'saveNewPrompts',
+        cmd : CMDS.saveNewPrompts,
         payload : newPrompts
       } ), '*');
       } catch( err ){
@@ -62,14 +74,14 @@ let iframeHTML = `<!DOCTYPE html>
     function signalInvalidJSON(){
       window.parent.postMessage( JSON.stringify( {
         sender: 'promptly',
-        cmd : 'invalidJSON'
+        cmd : CMDS.invalidJSON
       } ), '*');
     }
     
     function signalValidJSON(){
       window.parent.postMessage( JSON.stringify( {
         sender: 'promptly',
-        cmd : 'validJSON'
+        cmd : CMDS.validJSON
       } ), '*');
     }
     
@@ -80,6 +92,9 @@ let iframeHTML = `<!DOCTYPE html>
         switch( data.cmd ){
           case 'sendPrompts':
             sendPrompts();
+            break;
+          case 'populateEditor':
+            editor.setValue( JSON.stringify( data.payload ) );
             break;
           default :
             console.log( 'unknown command encountered:  ', data.cmd );
@@ -144,6 +159,15 @@ function main() {
     addTooltips();
     addEventListeners();
 }
+var CMDS;
+(function (CMDS) {
+    CMDS["sendPrompts"] = "sendPrompts";
+    CMDS["populateEditor"] = "populateEditor";
+    CMDS["editorReady"] = "editorReady";
+    CMDS["invalidJSON"] = "invalidJSON";
+    CMDS["validJSON"] = "validJSON";
+    CMDS["saveNewPrompts"] = "saveNewPrompts";
+})(CMDS || (CMDS = {}));
 /**
  * This function is called when a message is received from the iframe.
  * It parses the message and performs the appropriate action based on the command and passing the payload.
@@ -155,14 +179,21 @@ function iframeMessageReceived(event) {
         if (data.sender !== 'promptly')
             return console.log('ignoring message'); // If the message sender is not 'promptly', ignore the message.
         switch (data.cmd) {
-            case 'saveNewPrompts': // If the command is 'saveNewPrompts', save the new prompts.
+            case CMDS.saveNewPrompts: // If the command is 'saveNewPrompts', save the new prompts.
                 savePrompts(data.payload);
                 break;
-            case 'invalidJSON': // If the command is 'invalidJSON', disable the save button.
+            case CMDS.invalidJSON: // If the command is 'invalidJSON', disable the save button.
                 disableBtnSave();
                 break;
-            case 'validJSON': // If the command is 'validJSON', enable the save button.
+            case CMDS.validJSON: // If the command is 'validJSON', enable the save button.
                 enableBtnSave();
+                break;
+            case CMDS.editorReady: // If the command is 'editorReady', populate the editor with the stored prompts.
+                iframe.postMessage(JSON.stringify({
+                    sender: 'promptly',
+                    cmd: 'populateEditor',
+                    payload: JSON.stringify(getStoredPrompts())
+                }), '*');
                 break;
             default: // If the command is unknown, log the error.
                 console.log('unknown command encountered :', data.cmd);
