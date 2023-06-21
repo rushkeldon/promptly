@@ -13,6 +13,14 @@ Used in conjunction with an extension for Chrome this bit of code lets you store
 
 The rest should be self-explanatory, but if not please log a bug on github.
 
+## How To Extend & Build
+1. Clone the repo
+2. Run `npm install`
+3. Edit either `src/promptly.ts` or `src/promptly.less`
+4. Run `npm run build`
+5. Go to How To Use above
+
+
 ## Donations Welcome
 If you find this useful and would like to donate, please send to my Venmo account: @Keldon-Rush
 
