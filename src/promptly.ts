@@ -195,11 +195,7 @@ function iframeMessageReceived( event ) {
         enableBtnSave();
         break;
       case CMDS.editorReady :
-        iframe.contentWindow.postMessage( JSON.stringify({
-          sender: 'promptly',
-          cmd: 'populateEditor',
-          payload: JSON.stringify( getStoredPrompts() )
-        }), '*' );
+        sendPromptsToEditor();
         break;
       default :
         console.log( 'unknown command encountered :', data.cmd );
@@ -217,6 +213,14 @@ function createEditorIframe() {
   iframe.srcdoc = iframeHTML;
 }
 
+function sendPromptsToEditor() {
+  iframe.contentWindow.postMessage( JSON.stringify({
+    sender: 'promptly',
+    cmd: 'populateEditor',
+    payload: JSON.stringify( getStoredPrompts() )
+  }), '*' );
+}
+
 function dismissEditorIframe() {
   iframe.classList.remove( 'displayed' );
   btnSave.classList.remove( 'displayed' );
@@ -224,6 +228,7 @@ function dismissEditorIframe() {
 }
 
 function displayEditorIframe() {
+  sendPromptsToEditor();
   iframe.classList.add( 'displayed' );
   btnSave.classList.add( 'displayed' );
   shadowBlock.classList.add( 'displayed' );
