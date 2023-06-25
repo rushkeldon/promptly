@@ -18,7 +18,7 @@ The rest should be self-explanatory, but if not please log a bug on github.
 2. Run `npm install`
 3. Edit either `src/promptly.ts` or `src/promptly.less`
 4. Run `npm run build`
-5. Go to How To Use above
+5. Go to #3 in How To Use above
 
 
 ## Donations Welcome
