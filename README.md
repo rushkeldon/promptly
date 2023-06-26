@@ -34,6 +34,11 @@ While you have invalid JSON in the editor you will see :
 
 When you have _valid_ JSON in the editor you will see :
 - the floppy disk button will be enabled
+- 
+## Screenshots w/ Annotation
+<img width="956" alt="promptly_menu_btn" src="https://github.com/rushkeldon/promptly/assets/7365842/e6314185-9944-4bcd-aed5-bd0f14cbb829">
+<img width="956" alt="promptly_menu" src="https://github.com/rushkeldon/promptly/assets/7365842/1aebb3f9-2257-4791-a8e6-8dd27dc3bd53">
+<img width="1237" alt="promptly_editor" src="https://github.com/rushkeldon/promptly/assets/7365842/4bf5578c-6a5c-48ca-af07-bbc2514b3374">
 
 
 ## Donations Welcome
