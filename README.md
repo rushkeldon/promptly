@@ -31,6 +31,7 @@ The rest should be self-explanatory, but if not please log a bug on github.
 While you have invalid JSON in the editor you will see :
 - red indicators in the editor
 - the floppy disk (save) button (upper left) will be disabled
+
 When you have _valid_ JSON in the editor you will see :
 - the floppy disk button will be enabled
 
