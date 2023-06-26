@@ -22,7 +22,7 @@ The rest should be self-explanatory, but if not please log a bug on github.
 
 ## How To Add, Edit, and Remove Prompts
 1. Click the 'hamburger' menu top right
-2. Click the pencil button
+2. Click the pencil button (Edit)
 3. An editor will open up with the JSON of your currently saved prompts
 4. Edit the array of strings as you see fit
 5. Click the floppy disk button to save
@@ -30,7 +30,7 @@ The rest should be self-explanatory, but if not please log a bug on github.
 ### NOTES on Editing :
 While you have invalid JSON in the editor you will see :
 - red indicators in the editor
-- the floppy disk (save) button (upper left) will be disabled
+- the floppy disk (Save) button (upper left) will be disabled
 
 When you have _valid_ JSON in the editor you will see :
 - the floppy disk button will be enabled
